@@ -212,9 +212,9 @@ armazenamento e conexão de rede.
 
 Adicione uma captura do VirtualBox instalado:
 
-``` md
+
 ![Tela inicial do Oracle VirtualBox](img/Virtualbox1.png)
-```
+
 
 ------------------------------------------------------------------------
 
