@@ -562,13 +562,13 @@ Também foram explorados:
 
 ### 📸 Evidências sugeridas
 
-``` md
-![Teste de Internet](imagens/08-internet.png)
 
-![Teste do terminal](imagens/09-terminal.png)
+![Teste de Internet](img/Virtualbox5.png)
 
-![Gerenciador de arquivos](imagens/10-arquivos.png)
-```
+![Teste do terminal](img/Virtualbox6)
+
+![Gerenciador de arquivos](img/Virtualbox7)
+
 
 ------------------------------------------------------------------------
 
