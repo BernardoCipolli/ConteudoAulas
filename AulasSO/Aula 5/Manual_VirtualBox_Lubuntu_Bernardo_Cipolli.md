@@ -400,9 +400,9 @@ O VirtualBox simula a inicialização de um computador real.
 ### 📸 Evidências sugeridas
 
 
-![Instalador do Lubuntu](img/Virtualbox9)
+![Instalador do Lubuntu](img/Virtualbox9.png)
 
-![Processo de instalação](img/Virtualbox10)
+![Processo de instalação](img/Virtualbox10.png)
 
 
 ------------------------------------------------------------------------
@@ -565,9 +565,9 @@ Também foram explorados:
 
 ![Teste de Internet](img/Virtualbox5.png)
 
-![Teste do terminal](img/Virtualbox6)
+![Teste do terminal](img/Virtualbox6.png)
 
-![Gerenciador de arquivos](img/Virtualbox7)
+![Gerenciador de arquivos](img/Virtualbox7.png)
 
 
 ------------------------------------------------------------------------
