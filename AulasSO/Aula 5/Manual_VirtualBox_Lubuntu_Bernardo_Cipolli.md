@@ -278,9 +278,9 @@ Oracle VirtualBox
 
 ### 📸 Evidência sugerida
 
-``` md
-![Criação da máquina virtual](imagens/03-criacao-vm.png)
-```
+
+![Criação da máquina virtual](img/Virtualbox3.png)
+
 
 ------------------------------------------------------------------------
 
@@ -351,9 +351,9 @@ utilizado pelo VirtualBox.
 
 ### 📸 Evidência sugerida
 
-``` md
+
 ![Configuração de hardware da VM](img/Virtualbox4.png)
-```
+
 
 ------------------------------------------------------------------------
 
