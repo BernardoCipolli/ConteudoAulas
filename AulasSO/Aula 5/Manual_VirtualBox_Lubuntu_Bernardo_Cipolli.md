@@ -241,9 +241,9 @@ Esse arquivo funciona como uma mídia de instalação virtual.
 
 ### 📸 Evidência sugerida
 
-``` md
-![Imagem ISO do Lubuntu](imagens/02-lubuntu-iso.png)
-```
+
+![Imagem ISO do Lubuntu](img/Virtualbox2.png)
+
 
 ------------------------------------------------------------------------
 
@@ -352,7 +352,7 @@ utilizado pelo VirtualBox.
 ### 📸 Evidência sugerida
 
 ``` md
-![Configuração de hardware da VM](imagens/04-hardware-vm.png)
+![Configuração de hardware da VM](img/Virtualbox4.png)
 ```
 
 ------------------------------------------------------------------------
@@ -432,9 +432,9 @@ Após inserir usuário e senha, foi possível acessar a área de trabalho.
 
 ### 📸 Evidência importante
 
-``` md
-![Área de trabalho do Lubuntu](imagens/07-desktop-lubuntu.png)
-```
+
+![Área de trabalho do Lubuntu](img/Virtualbox.png)
+
 
 ------------------------------------------------------------------------
 
