@@ -563,7 +563,7 @@ Também foram explorados:
 ### 📸 Evidências sugeridas
 
 
-![Teste de Internet](img/Virtualbox5.png)
+![Teste de Internet](img/a.png)
 
 ![Teste do terminal](img/Virtualbox6.png)
 
