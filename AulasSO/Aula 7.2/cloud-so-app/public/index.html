@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark" data-view="standard" data-sidebar="expanded">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard avançado de monitoramento do sistema operacional com Node.js e Express.js">
+  <title>Cloud SO App | Live System Monitor</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/premium.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">SO</div>
+        <div>
+          <strong>Cloud SO</strong>
+          <span>Live System Monitor</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Navegação do dashboard">
+        <div class="nav-group-label">Monitoramento</div>
+        <a class="nav-item active" href="#overview" data-nav-order="01">▦ <span>Visão geral</span></a>
+        <a class="nav-item" href="#cockpit" data-nav-order="02">◇ <span>Cockpit</span></a>
+        <a class="nav-item" href="#deep-analytics" data-nav-order="03">⌁ <span>Analytics</span></a>
+
+        <div class="nav-group-label">Sistema</div>
+        <a class="nav-item" href="#hardware" data-nav-order="04">◫ <span>Hardware</span></a>
+        <a class="nav-item" href="#storage" data-nav-order="05">▤ <span>Discos</span></a>
+        <a class="nav-item" href="#network" data-nav-order="06">⌁ <span>Rede</span></a>
+        <a class="nav-item" href="#processes" data-nav-order="07">≋ <span>Processos</span></a>
+        <a class="nav-item" href="#client" data-nav-order="08">◉ <span>Seu dispositivo</span></a>
+        <a class="nav-item" href="#runtime" data-nav-order="09">⌘ <span>Runtime</span></a>
+
+        <div class="nav-group-label">Análise e ferramentas</div>
+        <a class="nav-item" href="#diagnostics" data-nav-order="10">✦ <span>Diagnóstico</span></a>
+        <a class="nav-item" href="#explorer" data-nav-order="11">⌕ <span>Explorer</span></a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-line"><span class="status-dot"></span> Monitoramento ativo</div>
+        <small>Node.js + Express.js</small>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">MONITORAMENTO AO VIVO</p>
+          <h1>Dashboard do Sistema Operacional</h1>
+          <p class="subtitle">Hardware, sistema, processos, rede e runtime atualizados automaticamente.</p>
+        </div>
+
+        <div class="top-actions">
+          <div class="update-control">
+            <label for="viewMode">Visualização</label>
+            <select id="viewMode">
+              <option value="standard">Padrão</option>
+              <option value="compact">Compacto</option>
+              <option value="performance">Performance</option>
+              <option value="wallboard">Wallboard</option>
+            </select>
+          </div>
+          <div class="update-control">
+            <label for="chartWindow">Histórico</label>
+            <select id="chartWindow">
+              <option value="60">1 min</option>
+              <option value="300" selected>5 min</option>
+              <option value="900">15 min</option>
+            </select>
+          </div>
+          <div class="update-control">
+            <label for="refreshRate">Atualização</label>
+            <select id="refreshRate">
+              <option value="1000">1 s</option>
+              <option value="2000" selected>2 s</option>
+              <option value="5000">5 s</option>
+              <option value="10000">10 s</option>
+            </select>
+          </div>
+          <div class="update-control">
+            <label for="themeSelect">Tema</label>
+            <select id="themeSelect">
+              <optgroup label="Essenciais">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+                <option value="aurora">Aurora</option>
+                <option value="contrast">Contraste</option>
+              </optgroup>
+              <optgroup label="Premium">
+                <option value="ocean">Ocean</option>
+                <option value="cyber">Cyber Neon</option>
+                <option value="crimson">Crimson</option>
+                <option value="emerald">Emerald</option>
+                <option value="sunset">Sunset</option>
+                <option value="royal">Royal</option>
+                <option value="rose">Rose</option>
+                <option value="graphite">Graphite</option>
+                <option value="nord">Nord</option>
+                <option value="solarized">Solarized</option>
+              </optgroup>
+            </select>
+          </div>
+          <button id="commandButton" class="icon-button premium-action" title="Buscar e executar comando (Ctrl+K)" aria-label="Abrir busca">⌕</button>
+          <button id="notificationsButton" class="icon-button premium-action notification-button" title="Central de eventos" aria-label="Abrir central de eventos">◌<span id="notificationBadge" class="notification-badge">0</span></button>
+          <button id="settingsButton" class="icon-button premium-action" title="Configurações do dashboard" aria-label="Abrir configurações">⚙</button>
+          <button id="exportButton" class="icon-button premium-action" title="Exportar snapshot" aria-label="Exportar snapshot">⇩</button>
+          <button id="pauseButton" class="icon-button" title="Pausar monitoramento" aria-label="Pausar monitoramento">Ⅱ</button>
+          <button id="refreshButton" class="icon-button" title="Atualizar agora" aria-label="Atualizar agora">↻</button>
+          <button id="sidebarButton" class="icon-button" title="Recolher menu" aria-label="Recolher menu">☰</button>
+          <button id="fullscreenButton" class="icon-button" title="Tela cheia" aria-label="Tela cheia">⛶</button>
+        </div>
+      </header>
+
+      <div class="scope-note" id="scopeNote">Carregando origem das métricas...</div>
+
+      <section id="healthSummary" class="health-strip wallboard-keep">
+        <div class="health-score-card">
+          <div class="health-ring" id="healthRing"><strong id="healthScore">--</strong><span>saúde</span></div>
+          <div>
+            <p class="eyebrow">STATUS DO SISTEMA</p>
+            <h2 id="healthLabel">Analisando...</h2>
+            <p class="health-copy" id="healthMessage">Aguardando as primeiras métricas ao vivo.</p>
+          </div>
+        </div>
+        <div class="status-cluster">
+          <div class="status-kpi" id="statusCpu"><span>CPU</span><strong>--%</strong><small>uso</small></div>
+          <div class="status-kpi" id="statusMemory"><span>RAM</span><strong>--%</strong><small>uso</small></div>
+          <div class="status-kpi" id="statusDisk"><span>Disco</span><strong>--%</strong><small>uso</small></div>
+          <div class="status-kpi" id="statusNetwork"><span>Rede</span><strong>--</strong><small>↓ / ↑</small></div>
+          <div class="status-kpi" id="statusEventLoop"><span>Event loop</span><strong>-- ms</strong><small>P95</small></div>
+          <div class="status-kpi" id="statusProcesses"><span>Processos</span><strong>--</strong><small>ativos</small></div>
+        </div>
+        <div class="alerts-box">
+          <div class="alerts-title"><span>Alertas inteligentes</span><span id="alertCount" class="chip">0</span></div>
+          <div id="alertList" class="alerts-list"><div class="alert-item ok">Nenhum alerta ainda.</div></div>
+        </div>
+      </section>
+
+<section id="overview" class="hero-grid wallboard-keep">
+        <article class="metric-card accent-card">
+          <div class="metric-head"><span>CPU</span><span class="chip" id="cpuCores">-- threads</span></div>
+          <strong class="metric-value"><span id="cpuUsage">--</span><small>%</small></strong>
+          <div class="progress"><span id="cpuBar"></span></div>
+          <canvas class="sparkline" id="cpuSparkline" height="38" aria-label="Histórico recente de CPU"></canvas>
+          <p id="cpuModel">Carregando processador...</p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-head"><span>Memória RAM</span><span class="chip" id="memoryTotal">--</span></div>
+          <strong class="metric-value"><span id="memoryUsage">--</span><small>%</small></strong>
+          <div class="progress"><span id="memoryBar"></span></div>
+          <canvas class="sparkline" id="memorySparkline" height="38" aria-label="Histórico recente de memória"></canvas>
+          <p><span id="memoryUsed">--</span> em uso · <span id="memoryFree">--</span> livre</p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-head"><span>Disco principal</span><span class="chip" id="diskMount">--</span></div>
+          <strong class="metric-value"><span id="diskUsage">--</span><small>%</small></strong>
+          <div class="progress"><span id="diskBar"></span></div>
+          <div class="metric-mini-row"><span>Saúde</span><strong id="diskHealthText">--</strong></div>
+          <p><span id="diskUsed">--</span> usados · <span id="diskFree">--</span> livres</p>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-head"><span>Uptime do sistema</span><span class="live-badge"><span></span> LIVE</span></div>
+          <strong class="metric-value uptime-value" id="systemUptime">--</strong>
+          <div class="metric-mini-row"><span>Última coleta</span><strong id="sampleAge">--</strong></div>
+          <p>Aplicação ativa por <span id="appUptime">--</span></p>
+          <div class="last-update">Atualizado: <span id="lastUpdate">--</span></div>
+        </article>
+      </section>
+
+<section id="liveAnalytics" class="analytics-grid wallboard-keep">
+        <article class="panel analytics-primary">
+          <div class="panel-header">
+            <div><p class="eyebrow">HISTÓRICO</p><h2>CPU e memória</h2></div>
+            <div class="legend"><span><i class="dot cpu"></i>CPU</span><span><i class="dot memory"></i>RAM</span></div>
+          </div>
+          <div class="chart-toolbar">
+            <span id="resourceChartSummary">Coletando amostras...</span>
+            <span class="chart-badge" id="resourcePeak">Pico --</span>
+          </div>
+          <div class="chart-wrap"><canvas id="resourceChart" width="900" height="285" aria-label="Gráfico de CPU e memória"></canvas></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div><p class="eyebrow">REDE</p><h2>Download e upload</h2></div>
+            <div class="legend"><span><i class="dot network-down"></i>↓</span><span><i class="dot network-up"></i>↑</span></div>
+          </div>
+          <div class="chart-toolbar"><span id="networkChartSummary">--</span><span class="chart-badge" id="networkPeak">Pico --</span></div>
+          <div class="chart-wrap small-chart"><canvas id="networkChart" height="220" aria-label="Gráfico de tráfego de rede"></canvas></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div><p class="eyebrow">NODE.JS</p><h2>Latência do event loop</h2></div>
+            <div class="legend"><span><i class="dot event-p95"></i>P95</span><span><i class="dot event-p99"></i>P99</span></div>
+          </div>
+          <div class="chart-toolbar"><span id="eventChartSummary">--</span><span class="chart-badge" id="eventPeak">Pico --</span></div>
+          <div class="chart-wrap small-chart"><canvas id="eventLoopChart" height="220" aria-label="Gráfico de latência do event loop"></canvas></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">TOP PROCESSOS</p><h2>CPU agora</h2></div><span class="chip" id="processBarsCount">--</span></div>
+          <div id="processBars" class="process-bars"><div class="empty-state">Coletando processos...</div></div>
+        </article>
+      </section>
+
+<section id="cockpit" class="premium-section premium-cockpit wallboard-keep" data-searchable="cockpit saúde gauges sessão carga memória disco rede">
+        <div class="section-heading premium-section-heading">
+          <div>
+            <p class="eyebrow">COCKPIT</p>
+            <h2>Central de comando</h2>
+            <p>Leitura rápida das métricas mais importantes, tendências da sessão e estado da conexão.</p>
+          </div>
+          <div class="section-heading-actions">
+            <span id="premiumConnectionState" class="connection-pill is-connecting"><i></i> Conectando</span>
+            <span id="premiumSampleRate" class="soft-pill">-- amostras</span>
+          </div>
+        </div>
+
+        <div class="premium-gauge-grid">
+          <article class="premium-gauge-card" data-searchable="cpu processador utilização gauge">
+            <div class="gauge-shell" id="premiumCpuGauge" style="--gauge-value:0">
+              <div class="gauge-center"><strong id="premiumCpuGaugeValue">--</strong><span>CPU</span></div>
+            </div>
+            <div class="gauge-copy">
+              <span>Uso atual</span>
+              <strong id="premiumCpuTrend">Aguardando</strong>
+              <small id="premiumCpuAverage">Média da sessão --</small>
+            </div>
+          </article>
+
+          <article class="premium-gauge-card" data-searchable="ram memória utilização gauge">
+            <div class="gauge-shell" id="premiumRamGauge" style="--gauge-value:0">
+              <div class="gauge-center"><strong id="premiumRamGaugeValue">--</strong><span>RAM</span></div>
+            </div>
+            <div class="gauge-copy">
+              <span>Memória</span>
+              <strong id="premiumRamTrend">Aguardando</strong>
+              <small id="premiumRamAverage">Média da sessão --</small>
+            </div>
+          </article>
+
+          <article class="premium-gauge-card" data-searchable="disco armazenamento storage gauge">
+            <div class="gauge-shell" id="premiumDiskGauge" style="--gauge-value:0">
+              <div class="gauge-center"><strong id="premiumDiskGaugeValue">--</strong><span>DISCO</span></div>
+            </div>
+            <div class="gauge-copy">
+              <span>Ocupação</span>
+              <strong id="premiumDiskTrend">Aguardando</strong>
+              <small id="premiumDiskFree">Livre --</small>
+            </div>
+          </article>
+
+          <article class="premium-gauge-card" data-searchable="event loop node latência gauge">
+            <div class="gauge-shell gauge-latency" id="premiumEventGauge" style="--gauge-value:0">
+              <div class="gauge-center"><strong id="premiumEventGaugeValue">--</strong><span>P95 ms</span></div>
+            </div>
+            <div class="gauge-copy">
+              <span>Event loop</span>
+              <strong id="premiumEventTrend">Aguardando</strong>
+              <small id="premiumEventAverage">Média da sessão --</small>
+            </div>
+          </article>
+
+          <article class="premium-gauge-card" data-searchable="rede network download upload throughput gauge">
+            <div class="gauge-shell gauge-network" id="premiumNetworkGauge" style="--gauge-value:0">
+              <div class="gauge-center"><strong id="premiumNetworkGaugeValue">--</strong><span>REDE</span></div>
+            </div>
+            <div class="gauge-copy">
+              <span>Throughput</span>
+              <strong id="premiumNetworkTrend">Aguardando</strong>
+              <small id="premiumNetworkAverage">↓ -- · ↑ --</small>
+            </div>
+          </article>
+        </div>
+
+        <div class="premium-session-grid">
+          <article class="panel premium-session-panel" data-panel-id="session-summary" data-searchable="sessão médias pico mínimo tendência estabilidade">
+            <div class="panel-header">
+              <div><p class="eyebrow">SESSÃO ATUAL</p><h2>Resumo estatístico</h2></div>
+              <span class="chip" id="premiumSessionDuration">--</span>
+            </div>
+            <div class="premium-stat-table">
+              <div class="premium-stat-row premium-stat-head"><span>Métrica</span><span>Agora</span><span>Média</span><span>Mín.</span><span>Pico</span></div>
+              <div class="premium-stat-row"><strong>CPU</strong><span id="statCpuNow">--</span><span id="statCpuAvg">--</span><span id="statCpuMin">--</span><span id="statCpuMax">--</span></div>
+              <div class="premium-stat-row"><strong>RAM</strong><span id="statRamNow">--</span><span id="statRamAvg">--</span><span id="statRamMin">--</span><span id="statRamMax">--</span></div>
+              <div class="premium-stat-row"><strong>Rede ↓</strong><span id="statDownNow">--</span><span id="statDownAvg">--</span><span id="statDownMin">--</span><span id="statDownMax">--</span></div>
+              <div class="premium-stat-row"><strong>Event P95</strong><span id="statEventNow">--</span><span id="statEventAvg">--</span><span id="statEventMin">--</span><span id="statEventMax">--</span></div>
+            </div>
+          </article>
+
+          <article class="panel premium-session-panel" data-panel-id="live-timeline" data-searchable="eventos timeline alertas atividade histórico">
+            <div class="panel-header">
+              <div><p class="eyebrow">EVENTOS</p><h2>Linha do tempo ao vivo</h2></div>
+              <button id="clearTimelineButton" class="mini-action" type="button">Limpar</button>
+            </div>
+            <div id="liveTimeline" class="live-timeline">
+              <div class="timeline-empty">Aguardando eventos relevantes da sessão.</div>
+            </div>
+          </article>
+
+          <article class="panel premium-session-panel" data-panel-id="quick-actions" data-searchable="ações rápidas exportar copiar relatório impressão atualizar">
+            <div class="panel-header"><div><p class="eyebrow">ATALHOS</p><h2>Ações rápidas</h2></div></div>
+            <div class="quick-action-grid">
+              <button class="quick-action" type="button" data-premium-command="refresh"><span>↻</span><strong>Atualizar</strong><small>Coletar agora</small></button>
+              <button class="quick-action" type="button" data-premium-command="copy-summary"><span>▣</span><strong>Copiar resumo</strong><small>Texto pronto</small></button>
+              <button class="quick-action" type="button" data-premium-command="export-json"><span>{ }</span><strong>JSON</strong><small>Snapshot completo</small></button>
+              <button class="quick-action" type="button" data-premium-command="export-csv"><span>≡</span><strong>CSV</strong><small>Histórico da sessão</small></button>
+              <button class="quick-action" type="button" data-premium-command="print"><span>▤</span><strong>Imprimir</strong><small>Relatório visual</small></button>
+              <button class="quick-action" type="button" data-premium-command="fullscreen"><span>⛶</span><strong>Tela cheia</strong><small>Modo apresentação</small></button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+<section id="deep-analytics" class="premium-section" data-searchable="analytics gráficos heatmap carga cpu memória storage http node rede">
+        <div class="section-heading premium-section-heading">
+          <div>
+            <p class="eyebrow">DEEP ANALYTICS</p>
+            <h2>Análise visual detalhada</h2>
+            <p>Gráficos complementares calculados no navegador a partir das amostras coletadas ao vivo.</p>
+          </div>
+          <div class="segmented-control" id="premiumChartRange" role="group" aria-label="Janela dos gráficos premium">
+            <button type="button" data-range="60">1m</button>
+            <button type="button" data-range="300" class="active">5m</button>
+            <button type="button" data-range="900">15m</button>
+            <button type="button" data-range="0">Sessão</button>
+          </div>
+        </div>
+
+        <div class="premium-analytics-grid">
+          <article class="panel premium-chart-panel premium-span-2" data-panel-id="scheduler-load" data-searchable="scheduler load average carga node cpu">
+            <div class="panel-header">
+              <div><p class="eyebrow">SCHEDULER</p><h2>Carga normalizada e CPU Node</h2></div>
+              <div class="legend"><span><i class="dot premium-load"></i>Load</span><span><i class="dot premium-node"></i>Node</span></div>
+            </div>
+            <div class="chart-metrics-line"><span id="loadChartSummary">Aguardando diagnóstico...</span><span id="loadChartPeak" class="chart-badge">Pico --</span></div>
+            <div class="premium-canvas-wrap"><canvas id="loadChart" height="300"></canvas></div>
+          </article>
+
+          <article class="panel premium-chart-panel" data-panel-id="memory-composition" data-searchable="memória composição usada livre cache swap donut">
+            <div class="panel-header"><div><p class="eyebrow">MEMÓRIA</p><h2>Composição atual</h2></div><span id="memoryCompositionLabel" class="chip">--</span></div>
+            <div class="donut-stage">
+              <canvas id="memoryDonutChart" width="320" height="320"></canvas>
+              <div class="donut-center"><strong id="memoryDonutCenter">--</strong><span>em uso</span></div>
+            </div>
+            <div id="memoryLegend" class="premium-legend-list"></div>
+          </article>
+
+          <article class="panel premium-chart-panel" data-panel-id="core-heatmap" data-searchable="cpu cores heatmap núcleo thread histórico temperatura mapa calor">
+            <div class="panel-header"><div><p class="eyebrow">CPU HEATMAP</p><h2>Núcleos ao longo do tempo</h2></div><span id="heatmapCoreCount" class="chip">--</span></div>
+            <div class="heatmap-scale"><span>0%</span><i></i><span>100%</span></div>
+            <div class="premium-canvas-wrap heatmap-wrap"><canvas id="cpuHeatmapChart" height="300"></canvas></div>
+            <p class="panel-note">Cada linha representa um núcleo lógico; as colunas são as amostras mais recentes.</p>
+          </article>
+
+          <article class="panel premium-chart-panel premium-span-2" data-panel-id="storage-capacity" data-searchable="disco volumes storage capacidade uso livre barras">
+            <div class="panel-header"><div><p class="eyebrow">ARMAZENAMENTO</p><h2>Capacidade por volume</h2></div><span id="storageCapacityCount" class="chip">--</span></div>
+            <div id="storageCapacityBars" class="capacity-bars"><div class="empty-state">Coletando volumes...</div></div>
+          </article>
+
+          <article class="panel premium-chart-panel" data-panel-id="http-throughput" data-searchable="http requisições 2xx 4xx 5xx servidor gráfico">
+            <div class="panel-header"><div><p class="eyebrow">HTTP</p><h2>Atividade do servidor</h2></div><span id="httpRateLabel" class="chip">-- req/s</span></div>
+            <div class="premium-canvas-wrap"><canvas id="httpRateChart" height="260"></canvas></div>
+            <div class="mini-kpi-grid">
+              <div><span>2xx</span><strong id="premiumHttp2xx">--</strong></div>
+              <div><span>4xx</span><strong id="premiumHttp4xx">--</strong></div>
+              <div><span>5xx</span><strong id="premiumHttp5xx">--</strong></div>
+            </div>
+          </article>
+
+          <article class="panel premium-chart-panel" data-panel-id="process-scatter" data-searchable="processos cpu memória scatter top processos">
+            <div class="panel-header"><div><p class="eyebrow">PROCESSOS</p><h2>CPU × memória</h2></div><span id="processScatterCount" class="chip">--</span></div>
+            <div class="premium-canvas-wrap"><canvas id="processScatterChart" height="300"></canvas></div>
+            <p class="panel-note">Posição horizontal = memória; vertical = CPU. Passe o mouse para identificar.</p>
+          </article>
+
+          <article class="panel premium-chart-panel" data-panel-id="browser-performance" data-searchable="browser navegador performance paint dom carregamento recursos">
+            <div class="panel-header"><div><p class="eyebrow">FRONT-END</p><h2>Performance do navegador</h2></div><span id="browserPerfScore" class="chip">--</span></div>
+            <div id="browserPerformanceBars" class="browser-performance-bars"><div class="empty-state">Calculando Navigation Timing...</div></div>
+          </article>
+        </div>
+      </section>
+
+<section id="hardware" class="content-grid performance-section">
+        <article class="panel span-2">
+          <div class="panel-header"><div><p class="eyebrow">PROCESSAMENTO</p><h2>Uso por núcleo lógico</h2></div><span id="cpuSpeed" class="chip">-- MHz</span></div>
+          <div id="coreGrid" class="core-grid"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">PROCESSADOR</p><h2>Especificações</h2></div></div>
+          <div class="info-list">
+            <div><span>Fabricante</span><strong id="cpuManufacturer">--</strong></div>
+            <div><span>Núcleos físicos</span><strong id="physicalCores">--</strong></div>
+            <div><span>Threads lógicas</span><strong id="logicalCores">--</strong></div>
+            <div><span>Clock atual</span><strong id="cpuCurrentClock">--</strong></div>
+            <div><span>Clock máximo</span><strong id="cpuMaxClock">--</strong></div>
+            <div><span>Cache L2</span><strong id="cpuL2">--</strong></div>
+            <div><span>Cache L3</span><strong id="cpuL3">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">COMPUTADOR</p><h2>Placa e firmware</h2></div></div>
+          <div class="info-list">
+            <div><span>Fabricante</span><strong id="computerManufacturer">--</strong></div>
+            <div><span>Modelo</span><strong id="computerModel">--</strong></div>
+            <div><span>Placa-mãe</span><strong id="motherboard">--</strong></div>
+            <div><span>BIOS</span><strong id="biosVersion">--</strong></div>
+            <div><span>Fabricante BIOS</span><strong id="biosManufacturer">--</strong></div>
+            <div><span>Data BIOS</span><strong id="biosDate">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel span-2">
+          <div class="panel-header"><div><p class="eyebrow">GRÁFICOS</p><h2>GPU / placa de vídeo</h2></div><span class="chip" id="gpuCount">0 GPU(s)</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>GPU</th><th>Uso</th><th>Temperatura</th><th>VRAM</th><th>Clock</th><th>Driver</th></tr></thead>
+              <tbody id="gpuTable"><tr><td colspan="6">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+<section id="storage" class="content-grid detail-section">
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">ARMAZENAMENTO</p><h2>Disco principal</h2></div></div>
+          <div class="donut-wrap"><div class="donut" id="diskDonut"><div><strong id="diskDonutValue">--%</strong><span>ocupado</span></div></div></div>
+          <div class="stats-row">
+            <div><span>Total</span><strong id="diskTotal">--</strong></div>
+            <div><span>Livre</span><strong id="diskFreeDetail">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel span-2">
+          <div class="panel-header"><div><p class="eyebrow">VOLUMES</p><h2>Partições / sistemas de arquivos</h2></div><span class="chip" id="volumeCount">0 volume(s)</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Unidade</th><th>Rótulo / FS</th><th>Total</th><th>Usado</th><th>Livre</th><th>Ocupação</th></tr></thead>
+              <tbody id="volumesTable"><tr><td colspan="6">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel span-3">
+          <div class="panel-header"><div><p class="eyebrow">DISPOSITIVOS FÍSICOS</p><h2>Unidades instaladas</h2></div><span class="chip" id="physicalDiskCount">0 disco(s)</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Modelo</th><th>Tipo</th><th>Interface</th><th>Capacidade</th><th>Partições</th><th>Status</th></tr></thead>
+              <tbody id="physicalDisksTable"><tr><td colspan="6">Carregando...</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+<section id="network" class="panel section-panel performance-section">
+        <div class="panel-header">
+          <div><p class="eyebrow">CONECTIVIDADE</p><h2>Interfaces e endereços de rede</h2></div>
+          <span class="chip"><span id="networkCount">0</span> endereço(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Interface</th><th>Família</th><th>Endereço IP</th><th>CIDR</th><th>Máscara</th><th>MAC</th></tr></thead>
+            <tbody id="networkTable"><tr><td colspan="6">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+<section id="processes" class="panel section-panel performance-section">
+        <div class="panel-header">
+          <div><p class="eyebrow">ATIVIDADE</p><h2>Processos com maior uso de CPU</h2></div>
+          <span class="chip"><span id="processCount">--</span> processo(s)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>PID</th><th>Processo</th><th>CPU</th><th>RAM</th><th>% memória</th><th>Tempo ativo</th></tr></thead>
+            <tbody id="processTable"><tr><td colspan="6">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+<section id="client" class="content-grid client-section">
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">SEU NAVEGADOR</p><h2>Dispositivo cliente</h2></div></div>
+          <div class="info-list">
+            <div><span>Sistema detectado</span><strong id="clientPlatform">--</strong></div>
+            <div><span>CPU threads expostas</span><strong id="clientCores">--</strong></div>
+            <div><span>Memória aproximada</span><strong id="clientMemory">--</strong></div>
+            <div><span>Idioma</span><strong id="clientLanguage">--</strong></div>
+            <div><span>Fuso</span><strong id="clientTimezone">--</strong></div>
+            <div><span>User Agent</span><strong class="break-text" id="clientUserAgent">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">TELA</p><h2>Display e renderização</h2></div></div>
+          <div class="info-list">
+            <div><span>Resolução</span><strong id="clientResolution">--</strong></div>
+            <div><span>Área disponível</span><strong id="clientAvailableResolution">--</strong></div>
+            <div><span>Viewport</span><strong id="clientViewport">--</strong></div>
+            <div><span>Pixel ratio</span><strong id="clientDpr">--</strong></div>
+            <div><span>Profundidade de cor</span><strong id="clientColorDepth">--</strong></div>
+            <div><span>GPU WebGL</span><strong class="break-text" id="clientGpu">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">CONEXÃO</p><h2>Rede do navegador</h2></div><span id="clientOnline" class="chip">--</span></div>
+          <div class="info-list">
+            <div><span>Tipo efetivo</span><strong id="clientConnectionType">--</strong></div>
+            <div><span>Downlink estimado</span><strong id="clientDownlink">--</strong></div>
+            <div><span>RTT estimado</span><strong id="clientRtt">--</strong></div>
+            <div><span>Economia de dados</span><strong id="clientSaveData">--</strong></div>
+            <div><span>Bateria</span><strong id="clientBattery">--</strong></div>
+            <div><span>FPS da página</span><strong id="clientFps">--</strong></div>
+          </div>
+        </article>
+      </section>
+
+<section id="runtime" class="content-grid performance-section">
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">APLICAÇÃO</p><h2>Runtime Node.js</h2></div></div>
+          <div class="info-list">
+            <div><span>Node.js</span><strong id="nodeVersion">--</strong></div>
+            <div><span>Express</span><strong id="expressVersion">--</strong></div>
+            <div><span>V8</span><strong id="v8Version">--</strong></div>
+            <div><span>libuv</span><strong id="uvVersion">--</strong></div>
+            <div><span>OpenSSL</span><strong id="opensslVersion">--</strong></div>
+            <div><span>PID / PPID</span><strong id="pid">--</strong></div>
+            <div><span>Diretório</span><strong class="break-text" id="cwd">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">PROCESSO NODE</p><h2>CPU e memória</h2></div></div>
+          <div class="info-list">
+            <div><span>CPU processo</span><strong id="nodeCpu">--</strong></div>
+            <div><span>RSS</span><strong id="rss">--</strong></div>
+            <div><span>Heap usado</span><strong id="heapUsed">--</strong></div>
+            <div><span>Heap total</span><strong id="heapTotal">--</strong></div>
+            <div><span>Externa</span><strong id="externalMemory">--</strong></div>
+            <div><span>ArrayBuffers</span><strong id="arrayBuffers">--</strong></div>
+            <div><span>Memória disponível</span><strong id="nodeAvailableMemory">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">EVENT LOOP</p><h2>Latência interna</h2></div></div>
+          <div class="info-list">
+            <div><span>Média</span><strong id="eventLoopMean">--</strong></div>
+            <div><span>P50</span><strong id="eventLoopP50">--</strong></div>
+            <div><span>P95</span><strong id="eventLoopP95">--</strong></div>
+            <div><span>P99</span><strong id="eventLoopP99">--</strong></div>
+            <div><span>Máximo</span><strong id="eventLoopMax">--</strong></div>
+            <div><span>Handles ativos</span><strong id="activeHandles">--</strong></div>
+          </div>
+        </article>
+      </section>
+
+<section id="diagnostics" class="premium-section" data-searchable="diagnóstico recomendações dns v8 linux pressure limites node heap">
+        <div class="section-heading premium-section-heading">
+          <div>
+            <p class="eyebrow">DIAGNÓSTICO</p>
+            <h2>Insights e detalhes avançados</h2>
+            <p>Interpretação das métricas e informações adicionais do runtime, scheduler, V8 e host.</p>
+          </div>
+          <button id="rerunDiagnosticsButton" class="premium-button" type="button">↻ Reavaliar</button>
+        </div>
+
+        <div class="diagnostic-scoreboard">
+          <article class="diagnostic-score-card"><span>Estabilidade</span><strong id="diagStabilityScore">--</strong><small id="diagStabilityText">Calculando</small></article>
+          <article class="diagnostic-score-card"><span>Capacidade</span><strong id="diagCapacityScore">--</strong><small id="diagCapacityText">Calculando</small></article>
+          <article class="diagnostic-score-card"><span>Runtime</span><strong id="diagRuntimeScore">--</strong><small id="diagRuntimeText">Calculando</small></article>
+          <article class="diagnostic-score-card"><span>Rede</span><strong id="diagNetworkScore">--</strong><small id="diagNetworkText">Calculando</small></article>
+          <article class="diagnostic-score-card"><span>Nota geral</span><strong id="diagOverallScore">--</strong><small id="diagOverallText">Calculando</small></article>
+        </div>
+
+        <div class="premium-diagnostics-grid">
+          <article class="panel premium-span-2" data-panel-id="recommendations" data-searchable="recomendações diagnóstico sugestões problemas saúde">
+            <div class="panel-header"><div><p class="eyebrow">INSIGHTS</p><h2>Recomendações automáticas</h2></div><span id="recommendationCount" class="chip">0</span></div>
+            <div id="recommendationList" class="recommendation-list"><div class="empty-state">Aguardando dados suficientes para avaliar o sistema.</div></div>
+          </article>
+
+          <article class="panel" data-panel-id="scheduler-details" data-searchable="scheduler parallelism load carga linux tarefas">
+            <div class="panel-header"><div><p class="eyebrow">SCHEDULER</p><h2>Carga e paralelismo</h2></div></div>
+            <div class="info-list compact-info-list">
+              <div><span>Paralelismo disponível</span><strong id="diagParallelism">--</strong></div>
+              <div><span>Load 1 min</span><strong id="diagLoad1">--</strong></div>
+              <div><span>Load 5 min</span><strong id="diagLoad5">--</strong></div>
+              <div><span>Load 15 min</span><strong id="diagLoad15">--</strong></div>
+              <div><span>Load normalizado</span><strong id="diagLoadNormalized">--</strong></div>
+              <div><span>Tarefas Linux</span><strong id="diagLinuxTasks">N/D</strong></div>
+            </div>
+          </article>
+
+          <article class="panel" data-panel-id="dns-details" data-searchable="dns servidores resolver rede result order">
+            <div class="panel-header"><div><p class="eyebrow">DNS</p><h2>Resolução de nomes</h2></div></div>
+            <div class="info-list compact-info-list">
+              <div><span>Servidores</span><strong id="diagDnsServers" class="break-text">--</strong></div>
+              <div><span>Ordem padrão</span><strong id="diagDnsOrder">--</strong></div>
+              <div><span>Interfaces externas</span><strong id="diagInterfaceCount">--</strong></div>
+              <div><span>Tráfego ativo</span><strong id="diagTrafficInterfaces">--</strong></div>
+            </div>
+          </article>
+
+          <article class="panel" data-panel-id="v8-heap" data-searchable="v8 heap javascript memória limite malloc contextos">
+            <div class="panel-header"><div><p class="eyebrow">V8</p><h2>Heap avançado</h2></div></div>
+            <div class="info-list compact-info-list">
+              <div><span>Heap usado</span><strong id="diagV8HeapUsed">--</strong></div>
+              <div><span>Heap total</span><strong id="diagV8HeapTotal">--</strong></div>
+              <div><span>Limite</span><strong id="diagV8HeapLimit">--</strong></div>
+              <div><span>Disponível</span><strong id="diagV8Available">--</strong></div>
+              <div><span>Malloc atual</span><strong id="diagV8Malloc">--</strong></div>
+              <div><span>Contextos nativos</span><strong id="diagV8Contexts">--</strong></div>
+            </div>
+          </article>
+
+          <article class="panel premium-span-2" data-panel-id="v8-spaces" data-searchable="v8 espaços heap new old code map large object tabela">
+            <div class="panel-header"><div><p class="eyebrow">V8 MEMORY SPACES</p><h2>Distribuição interna do heap</h2></div><span id="v8SpaceCount" class="chip">--</span></div>
+            <div class="table-wrap premium-table-wrap">
+              <table>
+                <thead><tr><th>Espaço</th><th>Tamanho</th><th>Usado</th><th>Disponível</th><th>Físico</th><th>Uso</th></tr></thead>
+                <tbody id="v8SpacesTable"><tr><td colspan="6">Carregando...</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel" data-panel-id="hosting-environment" data-searchable="cloud render container ambiente hospedagem node env">
+            <div class="panel-header"><div><p class="eyebrow">AMBIENTE</p><h2>Hospedagem</h2></div></div>
+            <div class="info-list compact-info-list">
+              <div><span>Detectado como</span><strong id="diagHosting">--</strong></div>
+              <div><span>Container</span><strong id="diagContainer">--</strong></div>
+              <div><span>NODE_ENV</span><strong id="diagNodeEnv">--</strong></div>
+              <div><span>CI</span><strong id="diagCi">--</strong></div>
+            </div>
+          </article>
+
+          <article class="panel" data-panel-id="capabilities" data-searchable="capabilities recursos node suporte api statfs parallelism event loop">
+            <div class="panel-header"><div><p class="eyebrow">CAPABILITIES</p><h2>Recursos disponíveis</h2></div><span id="capabilityScore" class="chip">--</span></div>
+            <div id="capabilityGrid" class="capability-grid"></div>
+          </article>
+
+          <article class="panel premium-span-2" data-panel-id="linux-pressure" data-searchable="linux pressure psi cpu memória io pressão stall">
+            <div class="panel-header"><div><p class="eyebrow">LINUX PSI</p><h2>Pressure Stall Information</h2></div><span id="psiAvailability" class="chip">--</span></div>
+            <div class="psi-grid">
+              <div class="psi-card"><span>CPU some avg10</span><strong id="psiCpuSome">--</strong><div class="mini-meter"><i id="psiCpuMeter"></i></div></div>
+              <div class="psi-card"><span>Memória some avg10</span><strong id="psiMemorySome">--</strong><div class="mini-meter"><i id="psiMemoryMeter"></i></div></div>
+              <div class="psi-card"><span>I/O some avg10</span><strong id="psiIoSome">--</strong><div class="mini-meter"><i id="psiIoMeter"></i></div></div>
+              <div class="psi-card"><span>I/O full avg10</span><strong id="psiIoFull">--</strong><div class="mini-meter"><i id="psiIoFullMeter"></i></div></div>
+            </div>
+            <p class="panel-note">PSI é disponibilizado pelo kernel Linux. Em Windows/macOS ou containers restritos, esta área pode ficar indisponível.</p>
+          </article>
+        </div>
+      </section>
+
+<section id="explorer" class="premium-section" data-searchable="explorer json dados raw api pesquisa copiar desenvolvedor">
+        <div class="section-heading premium-section-heading">
+          <div>
+            <p class="eyebrow">DATA EXPLORER</p>
+            <h2>Dados brutos da aplicação</h2>
+            <p>Explore o snapshot mais recente sem sair do dashboard. Útil para demonstração, estudo e depuração.</p>
+          </div>
+          <div class="explorer-actions">
+            <button id="copyJsonButton" class="premium-button secondary" type="button">Copiar JSON</button>
+            <button id="downloadJsonButton" class="premium-button" type="button">Baixar JSON</button>
+          </div>
+        </div>
+
+        <article class="panel explorer-panel" data-panel-id="data-explorer">
+          <div class="explorer-toolbar">
+            <label class="premium-search-field explorer-search-field">
+              <span>⌕</span>
+              <input id="jsonSearchInput" type="search" placeholder="Filtrar propriedades, valores ou caminhos..." autocomplete="off">
+            </label>
+            <select id="explorerDataset" class="premium-select">
+              <option value="system">Sistema</option>
+              <option value="diagnostics">Diagnóstico</option>
+              <option value="combined">Combinado</option>
+            </select>
+            <span id="explorerMatchCount" class="soft-pill">--</span>
+          </div>
+          <div class="explorer-body">
+            <aside id="jsonTreeNav" class="json-tree-nav"></aside>
+            <pre id="jsonViewer" class="json-viewer" tabindex="0">Aguardando dados...</pre>
+          </div>
+        </article>
+      </section>
+
+      <section class="content-grid detail-section">
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">SO / PROCESSO</p><h2>Contadores</h2></div></div>
+          <div class="info-list">
+            <div><span>CPU usuário acumulada</span><strong id="resourceUserCpu">--</strong></div>
+            <div><span>CPU sistema acumulada</span><strong id="resourceSystemCpu">--</strong></div>
+            <div><span>Page faults menores</span><strong id="minorPageFault">--</strong></div>
+            <div><span>Page faults maiores</span><strong id="majorPageFault">--</strong></div>
+            <div><span>FS reads / writes</span><strong id="fsOperations">--</strong></div>
+            <div><span>Context switches</span><strong id="contextSwitches">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">SERVIDOR HTTP</p><h2>Tráfego da aplicação</h2></div></div>
+          <div class="info-list">
+            <div><span>Requisições</span><strong id="httpRequests">--</strong></div>
+            <div><span>Respostas 2xx</span><strong id="http2xx">--</strong></div>
+            <div><span>Respostas 4xx</span><strong id="http4xx">--</strong></div>
+            <div><span>Respostas 5xx</span><strong id="http5xx">--</strong></div>
+            <div><span>Bytes enviados</span><strong id="httpBytesSent">--</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header"><div><p class="eyebrow">FORMATO</p><h2>Arquitetura e ambiente</h2></div></div>
+          <div class="info-list">
+            <div><span>Machine</span><strong id="machine">--</strong></div>
+            <div><span>Release</span><strong id="release">--</strong></div>
+            <div><span>Executável Node</span><strong class="break-text" id="execPath">--</strong></div>
+            <div><span>Iniciado em</span><strong id="startedAt">--</strong></div>
+            <div><span>Requests ativos</span><strong id="activeRequests">--</strong></div>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        <span>Cloud SO App · Monitoramento educacional em tempo real com Node.js + Express.js</span>
+        <span id="clock">--:--:--</span>
+      </footer>
+    </main>
+  </div>
+
+  <div id="focusBackdrop" class="focus-backdrop" aria-hidden="true"></div>
+  <div id="chartTooltip" class="chart-tooltip" aria-hidden="true"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <!-- Premium command palette -->
+  <div id="commandPalette" class="command-palette" aria-hidden="true">
+    <div class="command-backdrop" data-close-command></div>
+    <div class="command-dialog" role="dialog" aria-modal="true" aria-label="Central de comandos">
+      <div class="command-search-row">
+        <span>⌕</span>
+        <input id="commandSearchInput" type="search" placeholder="Busque uma seção, métrica ou ação..." autocomplete="off">
+        <kbd>ESC</kbd>
+      </div>
+      <div class="command-hint-row"><span>↑ ↓ navegar</span><span>Enter executar</span><span>Ctrl K abrir</span></div>
+      <div id="commandResults" class="command-results"></div>
+    </div>
+  </div>
+
+  <!-- Settings drawer -->
+  <div id="settingsOverlay" class="drawer-overlay" aria-hidden="true" data-close-settings></div>
+  <aside id="settingsDrawer" class="settings-drawer" aria-hidden="true" aria-label="Configurações do dashboard">
+    <div class="drawer-header">
+      <div><p class="eyebrow">PERSONALIZAÇÃO</p><h2>Configurações</h2></div>
+      <button id="closeSettingsButton" class="drawer-close" type="button" aria-label="Fechar">×</button>
+    </div>
+    <div class="drawer-scroll">
+      <section class="setting-group">
+        <h3>Aparência</h3>
+        <div class="theme-palette-header"><span><strong>Paleta do dashboard</strong><small>14 temas completos com cores, superfícies e contrastes próprios</small></span><span id="currentThemeName" class="chip">Dark</span></div>
+        <div id="themePaletteGrid" class="theme-palette-grid" aria-label="Escolha um tema">
+          <button class="theme-swatch" type="button" data-theme-choice="dark"><i><b></b><b></b><b></b></i><span>Dark</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="light"><i><b></b><b></b><b></b></i><span>Light</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="aurora"><i><b></b><b></b><b></b></i><span>Aurora</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="contrast"><i><b></b><b></b><b></b></i><span>Contraste</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="ocean"><i><b></b><b></b><b></b></i><span>Ocean</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="cyber"><i><b></b><b></b><b></b></i><span>Cyber Neon</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="crimson"><i><b></b><b></b><b></b></i><span>Crimson</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="emerald"><i><b></b><b></b><b></b></i><span>Emerald</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="sunset"><i><b></b><b></b><b></b></i><span>Sunset</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="royal"><i><b></b><b></b><b></b></i><span>Royal</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="rose"><i><b></b><b></b><b></b></i><span>Rose</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="graphite"><i><b></b><b></b><b></b></i><span>Graphite</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="nord"><i><b></b><b></b><b></b></i><span>Nord</span></button>
+          <button class="theme-swatch" type="button" data-theme-choice="solarized"><i><b></b><b></b><b></b></i><span>Solarized</span></button>
+        </div>
+        <label class="setting-row"><span><strong>Cor de destaque</strong><small>Personaliza gráficos e elementos ativos</small></span><input id="accentColorInput" type="color" value="#78a9ff"></label>
+        <label class="setting-row"><span><strong>Densidade</strong><small>Espaçamento geral do dashboard</small></span><select id="densitySelect"><option value="comfortable">Confortável</option><option value="compact">Compacta</option><option value="ultra">Ultra compacta</option></select></label>
+        <label class="setting-row"><span><strong>Arredondamento</strong><small>Cantos dos cards e painéis</small></span><input id="radiusRange" type="range" min="6" max="28" value="16"><output id="radiusOutput">16 px</output></label>
+        <label class="setting-row switch-row"><span><strong>Efeito glass</strong><small>Blur e transparência nos painéis</small></span><input id="glassToggle" type="checkbox" checked><i></i></label>
+        <label class="setting-row switch-row"><span><strong>Animações</strong><small>Transições e efeitos visuais</small></span><input id="animationToggle" type="checkbox" checked><i></i></label>
+        <label class="setting-row switch-row"><span><strong>Grid dos gráficos</strong><small>Linhas auxiliares nos canvases premium</small></span><input id="gridToggle" type="checkbox" checked><i></i></label>
+      </section>
+
+      <section class="setting-group">
+        <h3>Monitoramento</h3>
+        <label class="setting-row"><span><strong>Modo de conexão</strong><small>Polling tradicional ou Server-Sent Events</small></span><select id="connectionModeSelect"><option value="polling">Polling</option><option value="sse">Live stream (SSE)</option></select></label>
+        <label class="setting-row"><span><strong>Retenção local</strong><small>Máximo de amostras mantidas no navegador</small></span><select id="retentionSelect"><option value="500">500</option><option value="1000" selected>1.000</option><option value="2000">2.000</option><option value="5000">5.000</option></select></label>
+        <label class="setting-row switch-row"><span><strong>Alertas da sessão</strong><small>Registrar mudanças e picos relevantes</small></span><input id="sessionAlertsToggle" type="checkbox" checked><i></i></label>
+      </section>
+
+      <section class="setting-group">
+        <h3>Limites de alerta</h3>
+        <label class="threshold-row"><span>CPU atenção</span><input id="cpuWarnThreshold" type="number" min="1" max="100" value="75"><em>%</em></label>
+        <label class="threshold-row"><span>CPU crítico</span><input id="cpuCriticalThreshold" type="number" min="1" max="100" value="90"><em>%</em></label>
+        <label class="threshold-row"><span>RAM atenção</span><input id="ramWarnThreshold" type="number" min="1" max="100" value="80"><em>%</em></label>
+        <label class="threshold-row"><span>RAM crítico</span><input id="ramCriticalThreshold" type="number" min="1" max="100" value="92"><em>%</em></label>
+        <label class="threshold-row"><span>Disco atenção</span><input id="diskWarnThreshold" type="number" min="1" max="100" value="85"><em>%</em></label>
+        <label class="threshold-row"><span>Event loop atenção</span><input id="eventWarnThreshold" type="number" min="1" max="1000" value="30"><em>ms</em></label>
+      </section>
+
+      <section class="setting-group">
+        <h3>Layout</h3>
+        <button id="resetPanelOrderButton" class="drawer-button" type="button">Restaurar ordem dos painéis</button>
+        <button id="resetPremiumSettingsButton" class="drawer-button danger-outline" type="button">Restaurar configurações premium</button>
+      </section>
+    </div>
+  </aside>
+
+  <!-- Notifications drawer -->
+  <div id="notificationsOverlay" class="drawer-overlay" aria-hidden="true" data-close-notifications></div>
+  <aside id="notificationsDrawer" class="notifications-drawer" aria-hidden="true" aria-label="Central de eventos">
+    <div class="drawer-header">
+      <div><p class="eyebrow">EVENTOS</p><h2>Central da sessão</h2></div>
+      <button id="closeNotificationsButton" class="drawer-close" type="button" aria-label="Fechar">×</button>
+    </div>
+    <div class="notification-toolbar"><span id="notificationSummary">Nenhum evento</span><button id="clearNotificationsButton" type="button">Limpar</button></div>
+    <div id="notificationList" class="notification-list"><div class="notification-empty">Os eventos da sessão aparecerão aqui.</div></div>
+  </aside>
+
+  <div id="premiumHoverTooltip" class="premium-hover-tooltip" aria-hidden="true"></div>
+  <script src="/app.js"></script>
+  <script src="/premium.js"></script>
+</body>
+</html>

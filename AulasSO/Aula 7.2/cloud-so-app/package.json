@@ -1,0 +1,28 @@
+{
+  "name": "cloud-so-app",
+  "version": "6.0.0",
+  "description": "Dashboard premium de monitoramento ao vivo com Node.js e Express.js, 14 temas, navegação organizada, gráficos, diagnósticos, SSE, modos e exportações.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "check": "node --check app.js && node --check public/app.js && node --check public/premium.js"
+  },
+  "engines": {
+    "node": ">=18.20.0"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "os",
+    "dashboard",
+    "monitoramento",
+    "sistema-operacional",
+    "hardware",
+    "live-monitor"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
